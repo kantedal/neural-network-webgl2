@@ -1,9 +1,6 @@
-import Neuron from './neuron'
 import initGpuContext from './utils/init-gpu-context'
-import ComputeShader from '../rendering/render-utils/compute-shader'
 import DebugRenderer from './utils/debug-renderer'
-import DataTexture3d from '../rendering/render-utils/data-texture-3d'
-import {FLOAT_TYPE, TEXTURE_TYPE} from '../rendering/render-utils/shader'
+import Layer from './layer'
 const mnist = require('mnist')
 
 // language=GLSL
@@ -23,44 +20,31 @@ export const imageRenderFragmentShader = `#version 300 es
 `
 
 export default class NeuralNetwork {
-  private _inputLayer: Neuron[]
-  private _hiddenLayer: Neuron[]
-  private _outputLayer: Neuron[]
+  private _inputLayer: Layer
+  private _hiddenLayer: Layer
+  private _outputLayer: Layer
   private _bestIndex: number = 0
 
   private _debugRenderer: DebugRenderer
 
-  constructor(inputs: number, hidden: number, outputs: number) {
+  constructor(inputNeurons: number, hiddenNeurons: number, outputNeurons: number) {
     initGpuContext()
     this._debugRenderer = new DebugRenderer()
 
-    const computeShader = new ComputeShader(imageRenderFragmentShader, 300, 300)
-    computeShader.setUniform('testVolumeShader', { type: TEXTURE_TYPE, value: create3dTexture() })
-    const result: Float32Array = computeShader.compute()
-    this._debugRenderer.renderImage(result, 300, 300)
-  }
-}
-
-
-const create3dTexture = () => {
-  const dimX = 28
-  const dimY = 28
-  const dimZ = 10
-  const dataArray = new Float32Array(dimX * dimY * dimZ)
-
-  for (let z = 0; z < dimZ; z++) {
-    for (let y = 0; y < dimY; y++) {
-      for (let x = 0; x < dimX; x++) {
-        if (y === 5) {
-          dataArray[y + x * dimY + z * dimX * dimY] = 1.0
-        }
-        else {
-          dataArray[y + x * dimY + z * dimX * dimY] = 0.0
-        }
-      }
-    }
+    this._inputLayer = new Layer(inputNeurons)
+    this._hiddenLayer = new Layer(hiddenNeurons, this._inputLayer)
+    this._outputLayer = new Layer(outputNeurons, this._hiddenLayer)
   }
 
-  const texture = new DataTexture3d(dimX, dimY, dimZ, dataArray)
-  return texture.texture
+  public respond() {
+    this._hiddenLayer.respond()
+    this._outputLayer.respond()
+
+    this._debugRenderer.renderImage(this._hiddenLayer.output, 28, 28)
+    console.log(this._hiddenLayer.output)
+  }
+
+  get inputLayer(): Layer { return this._inputLayer }
+  get hiddenLayer(): Layer { return this._hiddenLayer }
+  get outputLayer(): Layer { return this._outputLayer }
 }

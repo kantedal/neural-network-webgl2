@@ -8,7 +8,7 @@ export default class ComputeShader {
 
   constructor(computeShaderSource: string, private _sizeX: number, private _sizeY: number) {
     this._shader = new Shader(computeVertexSource, computeShaderSource)
-    this._fbo = new FBO(this._shader, this._sizeX, this._sizeY)
+    this._fbo = new FBO(this._shader, this._sizeX, this._sizeY, 4)
     this._fbo.enableWriteToTexture()
   }
 

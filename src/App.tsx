@@ -14,7 +14,7 @@ class App extends React.Component {
 
     return (
       <div style={{ margin: 10 }}>
-        <canvas width='300' height='300' id='canvas'/>
+        <canvas width='500' height='500' id='canvas'/>
       </div>
     )
   }
@@ -55,7 +55,12 @@ class App extends React.Component {
     //
     // console.log((correctAnswers / testIterations) * 100 + '% correct answers')
 
-    const nn = new NeuralNetwork(784, 300, 10)
+    const cards = mnist.set(100000, 0)
+    const trainingSet: Card[] = cards.training
+
+    const neuralNetwork = new NeuralNetwork(784, 784, 10)
+    neuralNetwork.inputLayer.output = new Float32Array(trainingSet[0].input)
+    neuralNetwork.respond()
 
     // const renderer = new Renderer()
     // renderer.renderImage(createFloatArrayFromSet(testCard), 28, 28)

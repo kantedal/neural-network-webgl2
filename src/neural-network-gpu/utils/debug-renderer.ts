@@ -26,7 +26,6 @@ export default class DebugRenderer {
 
 // language=GLSL
 export const debugRendererVertexShader = `#version 300 es
-
   in vec2 a_texCoord;
   in vec4 a_position;
   
