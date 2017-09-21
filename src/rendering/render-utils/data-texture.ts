@@ -6,8 +6,7 @@ export default class DataTexture {
   constructor(
     private _width: number,
     private _height: number,
-    private _data: Float32Array,
-    private _name: string
+    private _data: Float32Array
   ) {
     this._texture = gl.createTexture() as WebGLTexture
     this.updateTexture()

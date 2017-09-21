@@ -40,7 +40,7 @@ export default class Renderer {
 
   public renderImage(data: Float32Array, width: number, height: number) {
     this.oldDataTexture = this.newDataTexture
-    this.newDataTexture = new DataTexture(width, height, data, 'u_new_texture')
+    this.newDataTexture = new DataTexture(width, height, data)
 
     this.uniforms['u_new_texture'].value = this.newDataTexture.texture
     this.uniforms['u_old_texture'].value = this.oldDataTexture && this.oldDataTexture.texture
