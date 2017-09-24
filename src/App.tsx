@@ -70,7 +70,7 @@ class App extends React.Component {
     const neuralNetwork = new NeuralNetwork(784, 784, 10)
     neuralNetwork.inputLayer.output = new Float32Array(trainingSet[0].input)
     neuralNetwork.respond()
-    neuralNetwork.train(trainingSet[0].output)
+    // neuralNetwork.train(trainingSet[0].output)
 
     // const renderer = new Renderer()
     // renderer.renderImage(createFloatArrayFromSet(testCard), 28, 28)

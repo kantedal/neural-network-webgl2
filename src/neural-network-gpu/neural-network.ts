@@ -40,7 +40,8 @@ export default class NeuralNetwork {
     this._hiddenLayer.respond()
     this._outputLayer.respond()
 
-    // this._debugRenderer.renderImage(this._hiddenLayer.output, 28, 28, true)
+    console.log(this._outputLayer.output)
+    this._debugRenderer.renderImage(this._hiddenLayer.output, 28, 28, true)
   }
 
   public train(answer: number[]) {
