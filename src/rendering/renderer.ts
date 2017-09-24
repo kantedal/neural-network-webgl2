@@ -1,7 +1,7 @@
 import {initRenderContext} from './render-utils/render-context'
 import RenderTarget from './render-utils/render-target'
 import {imageRenderFragmentShader, imageRenderVertexShader} from './shaders'
-import Shader, {FLOAT_TYPE, IUniforms, TEXTURE_TYPE} from './render-utils/shader'
+import Shader, {IUniforms, UniformTypes} from './render-utils/shader'
 import DataTexture from './render-utils/data-texture'
 import {start} from 'repl'
 
@@ -17,9 +17,9 @@ export default class Renderer {
   constructor() {
     const shader = new Shader(imageRenderVertexShader, imageRenderFragmentShader)
     this.uniforms = {
-      u_time: { type: FLOAT_TYPE, value: 1000.0 },
-      u_new_texture: { type: TEXTURE_TYPE, value: null },
-      u_old_texture: { type: TEXTURE_TYPE, value: null }
+      u_time: { type: UniformTypes.Float, value: 1000.0 },
+      u_new_texture: { type: UniformTypes.Texture2d, value: null },
+      u_old_texture: { type: UniformTypes.Texture2d, value: null }
     }
     shader.uniforms = this.uniforms
 

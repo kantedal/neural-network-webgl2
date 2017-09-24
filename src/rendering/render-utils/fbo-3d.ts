@@ -2,14 +2,14 @@ import Shader from './shader'
 import RenderTarget from './render-target'
 import {gl} from './render-context'
 
-export default class FBO extends RenderTarget {
+export default class FBO3d extends RenderTarget {
   private _texture: WebGLTexture
   private _textureData: Float32Array
   private _writeToTexture: boolean = false
   private _framebuffer: WebGLFramebuffer
 
-  constructor(shader: Shader, sizeX: number, sizeY: number, private _outputChannels?: number) {
-    super(shader, sizeX, sizeY)
+  constructor(shader: Shader, sizeX: number, sizeY: number, sizeZ: number) {
+    super(shader, sizeX, sizeY * sizeZ)
     this.resetTexture()
     this._framebuffer = gl.createFramebuffer() as WebGLFramebuffer
   }
@@ -39,28 +39,13 @@ export default class FBO extends RenderTarget {
       gl.readPixels(0, 0, this.sizeX, this.sizeY, gl.RGBA, gl.FLOAT, this._textureData)
     }
 
-    // console.log(gl.checkFramebufferStatus(gl.FRAMEBUFFER))
-
     gl.bindFramebuffer(gl.FRAMEBUFFER, null)
   }
 
   public resetTexture() {
-    let internalFormat = gl.RGBA32F
-    let type = gl.RGBA
-    let channels = 4
-
-    if (this._outputChannels) {
-      switch (this._outputChannels) {
-        case 1:
-          internalFormat = gl.R32F
-          type = gl.RED
-          channels = 1
-          console.log('change texture format')
-          break
-        default:
-          break
-      }
-    }
+    const internalFormat = gl.RGBA32F
+    const type = gl.RGBA
+    const channels = 4
 
     this._texture = gl.createTexture() as WebGLTexture
     gl.bindTexture(gl.TEXTURE_2D, this._texture)

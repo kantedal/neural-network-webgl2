@@ -1,6 +1,7 @@
 import * as React from 'react'
 import './App.css'
 import NeuralNetwork from './neural-network-gpu/neural-network'
+import NeuralNetworkCPU from './neural-network/neural-network'
 import Renderer from './rendering/renderer'
 import {Card} from './neural-network/utils/card'
 import createFloatArrayFromSet from './rendering/utils/create-floatarray-from-set'
@@ -58,9 +59,18 @@ class App extends React.Component {
     const cards = mnist.set(100000, 0)
     const trainingSet: Card[] = cards.training
 
+    const neuralNetworkCPU = new NeuralNetworkCPU(784, 784, 10)
+    neuralNetworkCPU.respond(trainingSet[0] as Card)
+    const output = []
+    for (const outp of neuralNetworkCPU.outputLayer) {
+      output.push(outp.output)
+    }
+    console.log(output)
+
     const neuralNetwork = new NeuralNetwork(784, 784, 10)
     neuralNetwork.inputLayer.output = new Float32Array(trainingSet[0].input)
     neuralNetwork.respond()
+    neuralNetwork.train(trainingSet[0].output)
 
     // const renderer = new Renderer()
     // renderer.renderImage(createFloatArrayFromSet(testCard), 28, 28)

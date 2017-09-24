@@ -40,8 +40,20 @@ export default class NeuralNetwork {
     this._hiddenLayer.respond()
     this._outputLayer.respond()
 
-    this._debugRenderer.renderImage(this._hiddenLayer.output, 28, 28, false)
-    console.log(this._hiddenLayer.output)
+    // this._debugRenderer.renderImage(this._hiddenLayer.output, 28, 28, true)
+  }
+
+  public train(answer: number[]) {
+    const error = []
+    for (let i = 0; i < this._outputLayer.output.length; i++) {
+      const desired = answer[i]
+      const actual = this._outputLayer.output[i]
+      error.push(desired - actual)
+    }
+    this._outputLayer.output = new Float32Array(error)
+    console.log('Error', error)
+    console.log('Answer', answer)
+    console.log(this._outputLayer.output)
   }
 
   get inputLayer(): Layer { return this._inputLayer }

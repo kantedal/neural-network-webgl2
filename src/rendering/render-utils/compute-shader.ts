@@ -6,9 +6,10 @@ export default class ComputeShader {
   private _shader: Shader
   private _fbo: FBO
 
-  constructor(computeShaderSource: string, private _sizeX: number, private _sizeY: number) {
+  constructor(computeShaderSource: string, private _sizeX: number, private _sizeY: number, private _channels?: number) {
+    console.log(this._sizeX, this._sizeY)
     this._shader = new Shader(computeVertexSource, computeShaderSource)
-    this._fbo = new FBO(this._shader, this._sizeX, this._sizeY, 4)
+    this._fbo = new FBO(this._shader, this._sizeX, this._sizeY, 4) // this._channels ? this._channels : 4)
     this._fbo.enableWriteToTexture()
   }
 

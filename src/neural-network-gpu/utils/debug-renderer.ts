@@ -1,5 +1,5 @@
 import RenderTarget from '../../rendering/render-utils/render-target'
-import Shader, {IUniforms, TEXTURE_TYPE} from '../../rendering/render-utils/shader'
+import Shader, {IUniforms, UniformTypes} from '../../rendering/render-utils/shader'
 import DataTexture from '../../rendering/render-utils/data-texture'
 
 export default class DebugRenderer {
@@ -9,7 +9,7 @@ export default class DebugRenderer {
 
   constructor() {
     const shader = new Shader(debugRendererVertexShader, debugRendererFragmentShader)
-    this._uniforms = { u_texture: {type: TEXTURE_TYPE, value: null} }
+    this._uniforms = { u_texture: {type: UniformTypes.Texture2d, value: null} }
     shader.uniforms = this._uniforms
 
     this._renderTarget = new RenderTarget(shader, 500, 500)
@@ -47,6 +47,6 @@ export const debugRendererFragmentShader = `#version 300 es
   
   void main() {
     vec2 uv = vec2(v_texCoord.x, v_texCoord.y);
-    outColor = texture(u_texture, uv);
+    outColor = vec4(texture(u_texture, uv).xyz, 1.0);
   }
 `

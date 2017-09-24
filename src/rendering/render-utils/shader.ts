@@ -10,14 +10,7 @@ export interface IUniforms {
   [name: string]: IUniform
 }
 
-export const FLOAT_TYPE = 0
-export const INTEGER_TYPE = 1
-export const VEC2_TYPE = 2
-export const VEC3_TYPE = 3
-export const VEC4_TYPE = 4
-export const TEXTURE_TYPE = 5
-
-export enum UniformTypes { FLOAT, INTEGER, VEC2, VEC3, VEC4, TEXTURE }
+export enum UniformTypes { Float, Integer, Vec2, Vec3, Vec4, Texture2d, Texture3d }
 
 export default class Shader {
   needsUpdate: boolean = false
@@ -40,26 +33,17 @@ export default class Shader {
         const uniform = this._uniforms[uniformName] as IUniform
         if (uniform) {
           if (uniform.location != null) {
-            if (uniform.type === FLOAT_TYPE) { gl.uniform1f(uniform.location, uniform.value) }
-            else if (uniform.type === VEC2_TYPE) { gl.uniform2fv(uniform.location, uniform.value) }
-            else if (uniform.type === VEC3_TYPE) { gl.uniform3fv(uniform.location, uniform.value) }
-            else if (uniform.type === INTEGER_TYPE) { gl.uniform1i(uniform.location, uniform.value) }
-            else if (uniform.type === TEXTURE_TYPE) {
+            if (uniform.type === UniformTypes.Float) { gl.uniform1f(uniform.location, uniform.value) }
+            else if (uniform.type === UniformTypes.Vec2) { gl.uniform2fv(uniform.location, uniform.value) }
+            else if (uniform.type === UniformTypes.Vec3) { gl.uniform3fv(uniform.location, uniform.value) }
+            else if (uniform.type === UniformTypes.Integer) { gl.uniform1i(uniform.location, uniform.value) }
+            else if (uniform.type === UniformTypes.Texture2d || uniform.type === UniformTypes.Texture3d) {
               gl.uniform1i(uniform.location, textureCount)
+              this.setActiveTexture(textureCount)
 
-              if (textureCount === 0) { gl.activeTexture(gl.TEXTURE0) }
-              else if (textureCount === 1) { gl.activeTexture(gl.TEXTURE1) }
-              else if (textureCount === 2) { gl.activeTexture(gl.TEXTURE2) }
-              else if (textureCount === 3) { gl.activeTexture(gl.TEXTURE3) }
-              else if (textureCount === 4) { gl.activeTexture(gl.TEXTURE4) }
-              else if (textureCount === 5) { gl.activeTexture(gl.TEXTURE5) }
-              else if (textureCount === 6) { gl.activeTexture(gl.TEXTURE6) }
-              else if (textureCount === 7) { gl.activeTexture(gl.TEXTURE7) }
-              else if (textureCount === 8) { gl.activeTexture(gl.TEXTURE8) }
-              else if (textureCount === 9) { gl.activeTexture(gl.TEXTURE9) }
-              else if (textureCount === 10) { gl.activeTexture(gl.TEXTURE10) }
+              if (uniform.type === UniformTypes.Texture2d) { gl.bindTexture(gl.TEXTURE_2D, uniform.value) }
+              else if (uniform.type === UniformTypes.Texture3d) { gl.bindTexture(gl.TEXTURE_3D, uniform.value) }
 
-              gl.bindTexture(gl.TEXTURE_2D, uniform.value)
               textureCount++
             }
           }
@@ -86,6 +70,20 @@ export default class Shader {
     }
 
     return shader
+  }
+
+  private setActiveTexture(textureCount: number) {
+    if (textureCount === 0) { gl.activeTexture(gl.TEXTURE0) }
+    else if (textureCount === 1) { gl.activeTexture(gl.TEXTURE1) }
+    else if (textureCount === 2) { gl.activeTexture(gl.TEXTURE2) }
+    else if (textureCount === 3) { gl.activeTexture(gl.TEXTURE3) }
+    else if (textureCount === 4) { gl.activeTexture(gl.TEXTURE4) }
+    else if (textureCount === 5) { gl.activeTexture(gl.TEXTURE5) }
+    else if (textureCount === 6) { gl.activeTexture(gl.TEXTURE6) }
+    else if (textureCount === 7) { gl.activeTexture(gl.TEXTURE7) }
+    else if (textureCount === 8) { gl.activeTexture(gl.TEXTURE8) }
+    else if (textureCount === 9) { gl.activeTexture(gl.TEXTURE9) }
+    else if (textureCount === 10) { gl.activeTexture(gl.TEXTURE10) }
   }
 
   private updateUniforms() {
