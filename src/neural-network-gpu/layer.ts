@@ -36,9 +36,10 @@ export const layerComputeShader = `#version 300 es
       }
     }
     
-    float outp = inputSum; //sigmoid(inputSum);
+    float outp = sigmoid(inputSum);
     
-    outColor = vec4(outp, 0.0, 0.0, 1.0);
+    vec4 clr = texture(neuronWeights, vec3(0.0));
+    outColor = clr; // texture(inputData, v_texCoord); // vec4(0.0, 0.0, 0.0, 1.0);
   }
 `
 
@@ -68,7 +69,7 @@ export default class Layer {
     if (this._inputLayer) {
       this._computeShader.setUniform('inputData', {
         type: TEXTURE_TYPE,
-        value: new DataTexture(this.dimensions, this.dimensions, this._inputLayer.output).texture
+        value: new DataTexture(this.dimensions, this.dimensions, this._inputLayer.output, 1).texture
       })
       this._output = this._computeShader.compute()
     }
@@ -83,7 +84,7 @@ export default class Layer {
     for (let z = 0; z < dimZ; z++) {
       for (let y = 0; y < dimY; y++) {
         for (let x = 0; x < dimX; x++) {
-          this._neuronWeights[y + x * dimY + z * dimX * dimY] = 1.0; // 2.0 * (Math.random() - 0.5)
+          this._neuronWeights[y + x * dimY + z * dimX * dimY] = 2.0 * (Math.random() - 0.5)
         }
       }
     }

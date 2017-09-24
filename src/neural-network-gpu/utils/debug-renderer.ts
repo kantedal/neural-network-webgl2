@@ -16,8 +16,8 @@ export default class DebugRenderer {
     this._renderTarget.render()
   }
 
-  public renderImage(data: Float32Array, width: number, height: number) {
-    this._dataTexture = new DataTexture(width, height, data)
+  public renderImage(data: Float32Array, width: number, height: number, mono: boolean) {
+    this._dataTexture = new DataTexture(width, height, data, mono ? 1 : 4)
     this._uniforms['u_texture'].value = this._dataTexture.texture
     this._renderTarget.render()
   }

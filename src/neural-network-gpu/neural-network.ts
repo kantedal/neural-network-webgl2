@@ -40,7 +40,7 @@ export default class NeuralNetwork {
     this._hiddenLayer.respond()
     this._outputLayer.respond()
 
-    this._debugRenderer.renderImage(this._hiddenLayer.output, 28, 28)
+    this._debugRenderer.renderImage(this._hiddenLayer.output, 28, 28, false)
     console.log(this._hiddenLayer.output)
   }
 
