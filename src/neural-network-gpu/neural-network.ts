@@ -51,7 +51,7 @@ export default class NeuralNetwork {
       const actual = this._outputLayer.output[i]
       error.push(desired - actual)
     }
-    this._outputLayer.output = new Float32Array(error)
+    this._outputLayer.error = new Float32Array(error)
     console.log('Error', error)
     console.log('Answer', answer)
     console.log(this._outputLayer.output)

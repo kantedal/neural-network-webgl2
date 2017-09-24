@@ -42,6 +42,40 @@ const respondComputeShader = `#version 300 es
   }
 `
 
+// language=GLSL
+const trainErrorComputeShader = `#version 300 es
+  precision highp float;
+
+  in vec2 v_texCoord;
+  out float outColor;
+  
+  uniform vec2 inputSize;
+  uniform vec2 inputErrorSize;
+  uniform sampler2D inputError;
+  uniform sampler2D error;
+  uniform sampler2D neuronWeights;
+  
+  float calculateError() {
+    vec2 startPosition = v_texCoord;
+    
+    float stepSizeX = 1.0 / inputErrorSize.x;
+    float stepSizeY = 1.0 / inputErrorSize.y;
+    
+    float errorSum = 0.0;
+    for (float x = 0.0; x <= 1.0; x += stepSizeX) {
+      for (float y = 0.0; y <= 1.0; y += stepSizeY) {
+        float weight = texture(neuronWeights, startPosition + vec2(x / inputErrorSize.x, y / inputErrorSize.y)).x;
+        errorSum += weight * texture(inputError, vec2(x, y)).x;
+      }
+    }
+    return errorSum;
+  }
+  
+  void main() {
+    outColor = calculateError();
+  }
+`
+
 export default class Layer {
   private _dimensionsX: number
   private _dimensionsY: number
@@ -54,7 +88,9 @@ export default class Layer {
   private _error: Float32Array
 
   constructor(private _size: number, private _inputLayer?: Layer) {
-    this.calcDimensions()
+    const dimensions = this.calcDimensionsFromSize(this._size)
+    this._dimensionsX = dimensions[0]
+    this._dimensionsY = dimensions[1]
 
     this.initNeuronWeights()
     const neuronWeightTexture = new DataTexture(this._dimensionsX * this._dimensionsX, this._dimensionsY * this._dimensionsY, this._neuronWeights, 1)
@@ -67,7 +103,7 @@ export default class Layer {
     }
     this._respondComputeShader.uniforms = this._respondUniforms
 
-    // this._trainComputeShader = new ComputeShader(respondComputeShader, this._dimensionsX * this._dimensionsX, this._dimensionsY * this._dimensionsY, 1)
+    // this._trainComputeShader = new ComputeShader(trainComputeShader, this._dimensionsX * this._dimensionsX, this._dimensionsY * this._dimensionsY, 1)
     // this._trainUniforms = {
     //   inputSize: { type: UniformTypes.Vec2, value: [this._dimensionsX, this._dimensionsY] },
     //   inputData: { type: UniformTypes.Texture2d, value: null },
@@ -78,10 +114,19 @@ export default class Layer {
 
   public respond() {
     if (this._inputLayer) {
+      const inputDimensions = this.calcDimensionsFromSize(this._inputLayer.output.length)
+      console.log(inputDimensions)
+
       this._respondComputeShader.setUniform('inputData', {
         type: UniformTypes.Texture2d,
-        value: new DataTexture(this.dimensionsX, this.dimensionsY, this._inputLayer.output, 1).texture
+        value: new DataTexture(inputDimensions[0], inputDimensions[1], this._inputLayer.output, 1).texture
       })
+
+      this._respondComputeShader.setUniform('inputSize', {
+        type: UniformTypes.Vec2,
+        value: inputDimensions
+      })
+
       this._output = this._respondComputeShader.compute()
       this.output = this._output.filter((val: number, index: number) => index % 4 === 0)
     }
@@ -98,16 +143,19 @@ export default class Layer {
     }
   }
 
-  private calcDimensions() {
-    this._dimensionsX = Math.ceil(Math.sqrt(this._size))
+  private calcDimensionsFromSize(size: number): number[] {
+    let dimX = Math.ceil(Math.sqrt(size))
+    let dimY = 0
 
     while (true) {
-      if (this._size % this._dimensionsX === 0) {
-        this._dimensionsY = this._size / this._dimensionsX
+      if (size % dimX === 0) {
+        dimY = size / dimX
         break
       }
-      this._dimensionsX++
+      dimX++
     }
+
+    return [dimX, dimY]
   }
 
   get output(): Float32Array { return this._output }
