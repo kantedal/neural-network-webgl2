@@ -1,6 +1,6 @@
 import initGpuContext from './utils/init-gpu-context'
 import DebugRenderer from './utils/debug-renderer'
-import Layer from './layer'
+import Layer from './layer/layer'
 const mnist = require('mnist')
 
 // language=GLSL
@@ -39,9 +39,7 @@ export default class NeuralNetwork {
   public respond() {
     this._hiddenLayer.respond()
     this._outputLayer.respond()
-
-    console.log(this._outputLayer.output)
-    this._debugRenderer.renderImage(this._hiddenLayer.output, 28, 28, true)
+    // this._debugRenderer.renderImage(this._hiddenLayer.output, 28, 28, true)
   }
 
   public train(answer: number[]) {
@@ -51,10 +49,14 @@ export default class NeuralNetwork {
       const actual = this._outputLayer.output[i]
       error.push(desired - actual)
     }
+    // console.log('output', this._outputLayer.output)
+    // console.log('answer', answer)
+    // console.log('error', error)
     this._outputLayer.error = new Float32Array(error)
-    console.log('Error', error)
-    console.log('Answer', answer)
-    console.log(this._outputLayer.output)
+    this._outputLayer.train()
+    this._hiddenLayer.train()
+
+    this._debugRenderer.renderImage(this._hiddenLayer.output, 28, 28, true)
   }
 
   get inputLayer(): Layer { return this._inputLayer }

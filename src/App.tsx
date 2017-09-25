@@ -60,17 +60,35 @@ class App extends React.Component {
     const trainingSet: Card[] = cards.training
 
     const neuralNetworkCPU = new NeuralNetworkCPU(784, 784, 10)
-    neuralNetworkCPU.respond(trainingSet[0] as Card)
-    const output = []
-    for (const outp of neuralNetworkCPU.outputLayer) {
-      output.push(outp.output)
+    const logCpuNN = () => {
+      const output = []
+      for (const outp of neuralNetworkCPU.hiddenLayer) {
+        for (const w of outp.weights) {
+          output.push(w)
+        }
+      }
+      console.log('CPU: ', output)
+
     }
-    console.log(output)
 
     const neuralNetwork = new NeuralNetwork(784, 784, 10)
-    neuralNetwork.inputLayer.output = new Float32Array(trainingSet[0].input)
-    neuralNetwork.respond()
-    // neuralNetwork.train(trainingSet[0].output)
+
+    const startTime = Date.now()
+    const trainIterations = 1
+    for (let i = 0; i < trainIterations; i++) {
+      const trainingImage = trainingSet[Math.floor(Math.random() * trainingSet.length)]
+      neuralNetwork.inputLayer.output = new Float32Array(trainingImage.input)
+      neuralNetwork.respond()
+      neuralNetwork.train(trainingImage.output)
+
+      neuralNetworkCPU.respond(trainingImage)
+      neuralNetworkCPU.train(trainingImage.output)
+
+      // logCpuNN()
+      // console.log('--------')
+    }
+    const duration = Date.now() - startTime
+    console.log('Ran ' + trainIterations + ' iterations in ' + duration + ' ms')
 
     // const renderer = new Renderer()
     // renderer.renderImage(createFloatArrayFromSet(testCard), 28, 28)
