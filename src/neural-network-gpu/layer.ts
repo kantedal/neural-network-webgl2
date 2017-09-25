@@ -58,8 +58,8 @@ const trainErrorComputeShader = `#version 300 es
   float calculateError() {
     vec2 startPosition = v_texCoord;
     
-    float stepSizeX = 1.0 / inputErrorSize.x;
-    float stepSizeY = 1.0 / inputErrorSize.y;
+    float stepSizeX = 1.0 / inputSize.x;
+    float stepSizeY = 1.0 / inputSize.y;
     
     float errorSum = 0.0;
     for (float x = 0.0; x <= 1.0; x += stepSizeX) {
@@ -76,13 +76,56 @@ const trainErrorComputeShader = `#version 300 es
   }
 `
 
+// language=GLSL
+const trainWeightsComputeShader = `#version 300 es
+  precision highp float;
+
+  in vec2 v_texCoord;
+  out float outColor;
+  
+  uniform vec2 inputSize;
+  uniform sampler2D inputData;
+  uniform sampler2D outputData;
+  uniform sampler2D errorData;
+  uniform sampler2D neuronWeights;
+  
+  float calculateWeight() {
+    vec2 startPosition = v_texCoord;
+    
+    float stepSizeX = 1.0 / inputSize.x;
+    float stepSizeY = 1.0 / inputSize.y;
+    
+    float outputValue = texture(outputData, startPosition);
+    float errorValue = texture(errorData, startPosition);
+    float delta = (1.0 - outputValue) * (1.0 + outputValue) * errorValue * 0.01;
+    
+    float weightSum = 0.0;
+    for (float x = 0.0; x <= 1.0; x += stepSizeX) {
+      for (float y = 0.0; y <= 1.0; y += stepSizeY) {
+        weightSum += weight * texture(inputData, vec2(x, y)).x;
+      }
+    }
+    return weightSum;
+  }
+  
+  void main() {
+    outColor = calculateError();
+  }
+`
+
 export default class Layer {
   private _dimensionsX: number
   private _dimensionsY: number
+
   private _respondComputeShader: ComputeShader
   private _respondUniforms: IUniforms
-  private _trainComputeShader: ComputeShader
-  private _trainUniforms: IUniforms
+
+  private _trainErrorComputeShader: ComputeShader
+  private _trainErrorUniforms: IUniforms
+
+  private _trainWeightsComputeShader: ComputeShader
+  private _trainWeightsUniforms: IUniforms
+
   private _neuronWeights: Float32Array
   private _output: Float32Array
   private _error: Float32Array
@@ -103,13 +146,14 @@ export default class Layer {
     }
     this._respondComputeShader.uniforms = this._respondUniforms
 
-    // this._trainComputeShader = new ComputeShader(trainComputeShader, this._dimensionsX * this._dimensionsX, this._dimensionsY * this._dimensionsY, 1)
-    // this._trainUniforms = {
-    //   inputSize: { type: UniformTypes.Vec2, value: [this._dimensionsX, this._dimensionsY] },
-    //   inputData: { type: UniformTypes.Texture2d, value: null },
-    //   neuronWeights: { type: UniformTypes.Texture2d, value: neuronWeightTexture.texture }
-    // }
-    // this._trainComputeShader.uniforms = this._trainUniforms
+    this._trainErrorComputeShader = new ComputeShader(trainErrorComputeShader, 28, 28, 1)
+    this._trainErrorUniforms = {
+      inputSize: { type: UniformTypes.Vec2, value: [28, 28] },
+      inputErrorSize: { type: UniformTypes.Vec2, value: [28, 28] },
+      inputData: { type: UniformTypes.Texture2d, value: null },
+      neuronWeights: { type: UniformTypes.Texture2d, value: neuronWeightTexture.texture }
+    }
+    this._trainErrorComputeShader.uniforms = this._trainErrorUniforms
   }
 
   public respond() {
