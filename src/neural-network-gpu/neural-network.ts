@@ -39,7 +39,6 @@ export default class NeuralNetwork {
   public respond() {
     this._hiddenLayer.respond()
     this._outputLayer.respond()
-    // this._debugRenderer.renderImage(this._hiddenLayer.output, 28, 28, true)
   }
 
   public train(answer: number[]) {
@@ -59,7 +58,27 @@ export default class NeuralNetwork {
     this._debugRenderer.renderImage(this._hiddenLayer.output, 28, 28, true)
   }
 
+  predict() {
+    const resp: number[] = []
+    let respTotal = 0.0
+    for (let k = 0; k < this._outputLayer.output.length; k++) {
+      resp.push(this._outputLayer.output[k])
+      respTotal += resp[k] + 1
+    }
+
+    let best = -1.0
+    for (let i = 0; i < resp.length; i++) {
+      if (resp[i] > best) {
+        best = resp[i]
+        this._bestIndex = i
+      }
+    }
+
+  }
+
   get inputLayer(): Layer { return this._inputLayer }
   get hiddenLayer(): Layer { return this._hiddenLayer }
   get outputLayer(): Layer { return this._outputLayer }
+  get bestIndex(): number { return this._bestIndex }
+
 }

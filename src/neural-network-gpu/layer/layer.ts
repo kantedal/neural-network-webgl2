@@ -10,35 +10,44 @@ const respondComputeShader = `#version 300 es
   in vec2 v_texCoord;
   out float outColor;
   
+  uniform vec2 size;
   uniform vec2 inputSize;
   uniform sampler2D inputData;
   uniform sampler2D neuronWeights;
   
   float sigmoid(float x) {
-    return 1.0 / (1.0 + exp(-1.0 * x));
+    return 1.0 / (1.0 + exp(-1.0 * x - 0.5));
+//    if (x >= 1.0) return 1.0;
+//    else if (x <= -1.0) return 0.0;
+//    else return 0.5 + x * (1.0 - abs(x) * 0.5);
   }
   
   float accumulateNeuronInput() {    
-    vec2 startPosition = v_texCoord;
+    vec2 startPosition = vec2(
+      float(round(size.x * (v_texCoord.x - 0.5 * (1.0 / size.x)))) / size.x,
+      float(round(size.y * (v_texCoord.y - 0.5 * (1.0 / size.y)))) / size.y
+    );
     
     float stepSizeX = 1.0 / inputSize.x;
     float stepSizeY = 1.0 / inputSize.y;
     
     float inputSum = 0.0;
-    for (float x = 0.0; x <= 1.0; x += stepSizeX) {
-      for (float y = 0.0; y <= 1.0; y += stepSizeY) {
-        float neuronValue = texture(inputData, vec2(x, y)).x;
-        float neuronWeight = texture(neuronWeights, startPosition + vec2(x / inputSize.x, y / inputSize.y)).x;
+    for (float x = 0.0; x <= 1.0 - stepSizeX; x += stepSizeX) {
+      for (float y = 0.0; y <= 1.0 - stepSizeY; y += stepSizeY) {
+        float neuronValue = texture(inputData, vec2(x + stepSizeX * 0.5, y + stepSizeY * 0.5)).x;
+        float neuronWeight = texture(neuronWeights, startPosition + vec2(x / (size.x - 1.0), y / (size.y - 1.0))).x;
         inputSum += neuronWeight * neuronValue;
       }
     }
     
-    return inputSum;
+//    return texture(neuronWeights, startPosition).x;
+    return sigmoid(inputSum);
+    // return texture(inputData, v_texCoord).x;
+    // return texture(neuronWeights, vec2(2.0 / ((size.x - 1.0) * inputSize.x), 0.0 / ((size.y - 1.0) * inputSize.y))).x; 
   }
   
   void main() {
-    float inputSum = accumulateNeuronInput();
-    outColor = sigmoid(inputSum);
+    outColor = accumulateNeuronInput();
   }
 `
 
@@ -62,7 +71,7 @@ const trainErrorComputeShader = `#version 300 es
     float errorSum = 0.0;
     for (float x = 0.0; x <= 1.0; x += stepSizeX) {
       for (float y = 0.0; y <= 1.0; y += stepSizeY) {
-        float weight = texture(neuronWeights, vec2(x / prevLayerSize.x, y / prevLayerSize.y) + vec2(startPosition.x / prevLayerSize.x, startPosition.x / prevLayerSize.y)).x;
+        float weight = texture(neuronWeights, vec2(x, y) + vec2(startPosition.x / prevLayerSize.x, startPosition.y / prevLayerSize.y)).x;
         float currentError = texture(errorData, vec2(x, y)).x;
         errorSum += weight * currentError;
       }
@@ -108,7 +117,7 @@ const trainWeightsComputeShader = `#version 300 es
     }
     
     float currentWeight = texture(neuronWeights, startPosition).x;
-    return currentWeight;
+    return weightSum + currentWeight;
   }
   
   void main() {
@@ -148,9 +157,9 @@ export default class Layer {
 
       this._respondComputeShader = new ComputeShader(respondComputeShader, this._dimensionsX, this._dimensionsY, 1)
       this._respondUniforms = {
-        inputSize: { type: UniformTypes.Vec2, value: [this._dimensionsX, this._dimensionsY] },
+        inputSize: { type: UniformTypes.Vec2, value: [inputDimX, inputDimY] },
         inputData: { type: UniformTypes.Texture2d, value: null },
-        neuronWeights: { type: UniformTypes.Texture2d, value: neuronWeightTexture.texture }
+        neuronWeights: { type: UniformTypes.Texture2d, value: null }
       }
       this._respondComputeShader.uniforms = this._respondUniforms
 
@@ -183,9 +192,9 @@ export default class Layer {
       this._respondComputeShader.setUniform('inputData', { type: UniformTypes.Texture2d, value: inputDataTexture.texture })
       this._respondComputeShader.setUniform('neuronWeights', { type: UniformTypes.Texture2d, value: neuronWeightTexture.texture })
       this._respondComputeShader.setUniform('inputSize', { type: UniformTypes.Vec2, value: [this._inputLayer.dimensionsX, this._inputLayer.dimensionsY] })
+      this._respondComputeShader.setUniform('size', { type: UniformTypes.Vec2, value: [this._dimensionsX, this._dimensionsY] })
 
-      this._output = this._respondComputeShader.compute()
-      this._output = this._output.filter((val: number, index: number) => index % 4 === 0)
+      this._output = this._respondComputeShader.compute().filter((val: number, index: number) => index % 4 === 0)
     }
   }
 
@@ -207,8 +216,7 @@ export default class Layer {
       this._trainWeightsComputeShader.setUniform('errorData', { type: UniformTypes.Texture2d, value: errorDataTexture.texture})
       this._trainWeightsComputeShader.setUniform('neuronWeights', { type: UniformTypes.Texture2d, value: neuronWeightTexture.texture})
 
-      this._neuronWeights = this._trainWeightsComputeShader.compute()
-      this._neuronWeights = this._neuronWeights.filter((val: number, index: number) => index % 4 === 0)
+      this._neuronWeights = this._trainWeightsComputeShader.compute().filter((val: number, index: number) => index % 4 === 0)
     }
   }
 
@@ -248,4 +256,6 @@ export default class Layer {
   get dimensionsY() { return this._dimensionsY }
   set error(err: Float32Array) { this._error = err }
   get error() { return this._error }
+  get neuronWeights(): Float32Array { return this._neuronWeights }
+  set neuronWeights(weights: Float32Array) { this._neuronWeights = weights }
 }

@@ -71,10 +71,6 @@ export default class NeuralNetwork {
       respTotal += resp[k] + 1
     }
 
-    // for (let k = 0; k < this.outputLayer.length; k++) {
-    //   // console.log(k + ': ' + (((this.outputLayer[k].output + 1) / respTotal) * 100) + '%')
-    // }
-
     let best = -1.0
     for (let i = 0; i < resp.length; i++) {
       if (resp[i] > best) {
@@ -83,7 +79,6 @@ export default class NeuralNetwork {
       }
     }
 
-    // console.log('best:', this.bestIndex)
   }
 
 }

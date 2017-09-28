@@ -46,7 +46,7 @@ export const debugRendererFragmentShader = `#version 300 es
   out vec4 outColor;
   
   void main() {
-    vec2 uv = vec2(v_texCoord.x, v_texCoord.y);
+    vec2 uv = vec2(v_texCoord.x, 1.0 - v_texCoord.y);
     outColor = vec4(texture(u_texture, uv).xyz, 1.0);
   }
 `
