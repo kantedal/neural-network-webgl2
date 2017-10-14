@@ -37,4 +37,8 @@ export default class DataTexture {
   get width(): number { return this._width }
   get height(): number { return this._height }
   get textureData(): Float32Array { return this._data }
+  set textureData(data: Float32Array) {
+    this._data = data
+    this.updateTexture()
+  }
 }

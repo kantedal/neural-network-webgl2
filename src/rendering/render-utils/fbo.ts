@@ -15,7 +15,7 @@ export default class FBO extends RenderTarget {
   }
 
   public render() {
-    gl.viewport(0, 0, this.sizeX * this.scaleFactor, this.sizeY * this.scaleFactor)
+    gl.viewport(0, 0, this.sizeX, this.sizeY)
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
     gl.useProgram(this._program)
     // gl.colorMask(true, false, false, false)
@@ -45,22 +45,9 @@ export default class FBO extends RenderTarget {
   }
 
   public resetTexture() {
-    let internalFormat = gl.RGBA32F
-    let type = gl.RGBA
-    let channels = 4
-
-    if (this._outputChannels) {
-      switch (this._outputChannels) {
-        case 1:
-          internalFormat = gl.R32F
-          type = gl.RED
-          channels = 1
-          console.log('change texture format')
-          break
-        default:
-          break
-      }
-    }
+    const internalFormat = gl.RGBA32F
+    const type = gl.RGBA
+    const channels = 4
 
     this._texture = gl.createTexture() as WebGLTexture
     gl.bindTexture(gl.TEXTURE_2D, this._texture)

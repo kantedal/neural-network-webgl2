@@ -3,7 +3,7 @@ import DebugRenderer from './utils/debug-renderer'
 import Layer from './layer/layer'
 const mnist = require('mnist')
 
-// language=GLSL
+ // #lang:GLSL
 export const imageRenderFragmentShader = `#version 300 es
   precision highp float;
   precision highp sampler3D;
@@ -11,7 +11,7 @@ export const imageRenderFragmentShader = `#version 300 es
   in vec2 v_texCoord;
   out vec4 outColor;
   
-  uniform sampler3D testVolumeTexture;
+  uniform sampler3 D testVolumeTexture;
   uniform float depthIndex;
   
   void main() {

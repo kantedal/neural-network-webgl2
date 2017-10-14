@@ -10,6 +10,7 @@
     -->
     <link rel="manifest" href="%PUBLIC_URL%/manifest.json">
     <link rel="shortcut icon" href="%PUBLIC_URL%/favicon.ico">
+    <script type="text/javascript" src="./weblas.js"></script>
     <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
@@ -23,6 +24,31 @@
     <title>React App</title>
   </head>
   <body>
+    <!--<script>-->
+
+
+      <!--var h1 = 1024, w1 = 1024,-->
+        <!--h2 = 1024, w2 = 1024;-->
+
+      <!--var A = new Float32Array(h1 * w1);-->
+      <!--var B = new Float32Array(h2 * w2);-->
+
+      <!--// fill A and B with science-->
+
+      <!--var M = h1,-->
+        <!--N = w2,-->
+        <!--K = h2; // must match w1-->
+
+      <!--var alpha = 1.0;-->
+      <!--var beta = 0.0;-->
+      <!--var C = new Float32Array(w2)      // specialized for neural net bias calculation-->
+
+      <!--// result will contain matrix multiply of A x B (times alpha)-->
+      <!--let start = Date.now()-->
+      <!--result = weblas.sgemm(M, N, K, alpha, A, B, beta, C);-->
+      <!--console.log('Weblas time', Date.now() - start, 'ms')-->
+
+    <!--</script>-->
     <noscript>
       You need to enable JavaScript to run this app.
     </noscript>

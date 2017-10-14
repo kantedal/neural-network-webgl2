@@ -21,6 +21,12 @@ export default class ComputeShader {
     this._shader.setUniform(id, data)
   }
 
+  public resize(sizeX: number, sizeY: number) {
+    this._sizeX = sizeX
+    this._sizeY = sizeY
+    this._fbo.resize(sizeX, sizeY)
+  }
+
   set uniforms(value: {[p: string]: IUniform}) { this._shader.uniforms = value }
   get sizeX() { return this._sizeX }
   get sizeY() { return this._sizeY }
